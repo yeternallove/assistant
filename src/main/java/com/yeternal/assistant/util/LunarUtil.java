@@ -14,6 +14,7 @@ public class LunarUtil {
     private final static int FLAG_LEAP = 0x10000;
     private final static int FLAG_MOUTH = 0x8000;
     private final static int FLAG_LEAP_MOUTH = 0x8;
+    private final static int LAST_MONTH = 12;
 
     private final static long[] LUNAR_INFO = new long[]{
             0x04bd8, 0x04ae0, 0x0a570, 0x054d5, 0x0d260, 0x0d950, 0x16554, 0x056a0, 0x09ad0, 0x055d2,
@@ -31,6 +32,71 @@ public class LunarUtil {
             0x07954, 0x06aa0, 0x0ad50, 0x05b52, 0x04b60, 0x0a6e6, 0x0a4e0, 0x0d260, 0x0ea65, 0x0d530,
             0x05aa0, 0x076a3, 0x096d0, 0x04bd7, 0x04ad0, 0x0a4d0, 0x1d0b6, 0x0d250, 0x0d520, 0x0dd45,
             0x0b5a0, 0x056d0, 0x055b2, 0x049b0, 0x0a577, 0x0a4b0, 0x0aa50, 0x1b255, 0x06d20, 0x0ada0};
+
+    /**
+     * 计算指定日期偏移相应天数对应农历日期
+     *
+     * @param y        年
+     * @param m        月
+     * @param d        日
+     * @param leap     闰月
+     * @param interval 间隔时间
+     * @return 特定格式的年月日 闰月采用+12算法 出错返回-1
+     */
+    private static int getLunarDate(int y, int m, int d, boolean leap, long interval) {
+        long info = getInfo(y);
+        // 同月
+        int days = (leap ? leapDays(info) : monthDays(info, m)) - d;
+        if (days >= interval) {
+            return getPackageTime(y, m, (int) (d + interval), leap);
+        }
+        interval -= days;
+        // 特殊闰月处理
+        int month = leapMonth(info);
+        if (!leap && m == month) {
+            days = leapDays(info);
+            if (days >= interval) {
+                return getPackageTime(y, m, (int) interval, true);
+            }
+            interval -= days;
+        }
+        // 同年
+        long date = getLunarDate(y, m + 1, month, interval);
+        if (date > 0) {
+            return (int) date;
+        }
+        interval += date;
+        // 跳过中间年
+        days = 0;
+        while (days < interval) {
+            interval -= days;
+            days = yearDays(getInfo(++y));
+        }
+        // 最后一年偏移
+        month = leapMonth(getInfo(y));
+        return (int) getLunarDate(y, 1, month, interval);
+    }
+
+    private static long getLunarDate(int y, int startMonth, int leapMonth, long interval) {
+        final long old = interval;
+        long info = getInfo(y);
+        int days;
+        for (int i = startMonth; i <= LAST_MONTH; i++) {
+            days = monthDays(info, i);
+            if (days >= interval) {
+                return getPackageTime(y, i, (int) interval, false);
+            }
+            interval -= days;
+            if (leapMonth == i) {
+                days = leapDays(info);
+                if (days >= interval) {
+                    return getPackageTime(y, i, (int) interval, true);
+                }
+                interval -= days;
+            }
+        }
+        return interval - old;
+    }
 
     /**
      * 求指定日期之间的差值（天）
@@ -52,15 +118,15 @@ public class LunarUtil {
         // 3.闰月真实性校验
         long info1 = getInfo(y1);
         long info2 = getInfo(y2);
-        int border1 = FLAG_MOUTH >> (leap1 ? m1 : m1 - 1);
-        int border2 = FLAG_MOUTH >> (leap2 ? m2 : m2 - 1);
-        int sum = 348 + d2 - d1;
-        for (int i = FLAG_MOUTH; i > FLAG_LEAP_MOUTH; i >>= 1) {
-            if (i > border2 && (info2 & i) != 0) {
-                sum += 1;
+        int border1 = leap1 ? m1 : m1 - 1;
+        int border2 = leap2 ? m2 : m2 - 1;
+        int sum = d2 - d1;
+        for (int i = 1; i <= LAST_MONTH; i++) {
+            if (i > border1) {
+                sum += monthDays(info1, i);
             }
-            if (i <= border1 && (info1 & i) != 0) {
-                sum += 1;
+            if (i <= border2) {
+                sum += monthDays(info2, i);
             }
         }
         // 闰月补偿
@@ -144,4 +210,15 @@ public class LunarUtil {
         return LUNAR_INFO[y - START_YEAR];
     }
 
+    /**
+     * 生成特定格式封装时间
+     *
+     * @param y 年
+     * @param m 月
+     * @param d 日
+     * @return 特定格式的年月日 闰月采用+12算法
+     */
+    private static int getPackageTime(int y, int m, int d, boolean leap) {
+        return y * 10000 + (leap ? m + 12 : m) * 100 + d;
+    }
 }
