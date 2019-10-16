@@ -1,5 +1,7 @@
 package com.yeternal.assistant.util;
 
+import cn.hutool.core.lang.Assert;
+
 /**
  * <p>
  * 农历工具类
@@ -34,6 +36,44 @@ public class LunarUtil {
             0x0b5a0, 0x056d0, 0x055b2, 0x049b0, 0x0a577, 0x0a4b0, 0x0aa50, 0x1b255, 0x06d20, 0x0ada0};
 
     /**
+     * 求指定日期之间的差值（天）
+     *
+     * @param y1    起始年
+     * @param m1    起始月
+     * @param d1    起始日
+     * @param leap1 闰月
+     * @param y2    目标年
+     * @param m2    目标月
+     * @param d2    目标日
+     * @param leap2 闰月
+     * @return 返回目标与起始的差值 存在负数
+     */
+    public static int getInterval(int y1, int m1, int d1, boolean leap1, int y2, int m2, int d2, boolean leap2) {
+        checkDate(y1, m1, d1, leap1);
+        checkDate(y2, m2, d2, leap2);
+
+        boolean flag = true;
+        if (y1 > y2) {
+            flag = false;
+        } else if (y1 == y2) {
+            if (m1 > m2) {
+                flag = false;
+            } else if (m1 == m2) {
+                if (leap1 && !leap2) {
+                    flag = false;
+                } else if (leap1 == leap2 && d1 > d2) {
+                    flag = false;
+                }
+            }
+        }
+        if (flag) {
+            return interval(y1, m1, d1, leap1, y2, m2, d2, leap2);
+        } else {
+            return -interval(y2, m2, d2, leap2, y1, m1, d1, leap1);
+        }
+    }
+
+    /**
      * 计算指定日期偏移相应天数对应农历日期
      *
      * @param y        年
@@ -43,12 +83,37 @@ public class LunarUtil {
      * @param interval 间隔时间
      * @return 特定格式的年月日 闰月采用+12算法 出错返回-1
      */
-    private static int getLunarDate(int y, int m, int d, boolean leap, long interval) {
+    public static int getLunarDate(int y, int m, int d, boolean leap, long interval) {
+        Assert.checkBetween(interval, 1, Integer.MAX_VALUE);
+        return getLunarDate(y, m, d, leap, (int) interval);
+    }
+
+    private static void checkDate(int y, int m, int d, boolean leap) {
+        long info = getInfo(y);
+        Assert.checkBetween(m, 1, LAST_MONTH);
+        if (leap) {
+            int month = leapMonth(info);
+            Assert.isTrue(m == month, "{}不是闰月,{}年闰月为{}", m, y, month);
+        }
+        Assert.checkBetween(d, 1, leap ? leapDays(info) : monthDays(info, m));
+    }
+
+    /**
+     * 计算指定日期偏移相应天数对应农历日期
+     *
+     * @param y        年
+     * @param m        月
+     * @param d        日
+     * @param leap     闰月
+     * @param interval 间隔时间 大于0
+     * @return 特定格式的年月日 闰月采用+12算法 出错返回-1
+     */
+    private static int getLunarDate(int y, int m, int d, boolean leap, int interval) {
         long info = getInfo(y);
         // 同月
         int days = (leap ? leapDays(info) : monthDays(info, m)) - d;
         if (days >= interval) {
-            return getPackageTime(y, m, (int) (d + interval), leap);
+            return getPackageTime(y, m, d + interval, leap);
         }
         interval -= days;
         // 特殊闰月处理
@@ -56,14 +121,14 @@ public class LunarUtil {
         if (!leap && m == month) {
             days = leapDays(info);
             if (days >= interval) {
-                return getPackageTime(y, m, (int) interval, true);
+                return getPackageTime(y, m, interval, true);
             }
             interval -= days;
         }
         // 同年
-        long date = getLunarDate(y, m + 1, month, interval);
+        int date = getLunarDate(y, m + 1, month, interval);
         if (date > 0) {
-            return (int) date;
+            return date;
         }
         interval += date;
         // 跳过中间年
@@ -74,23 +139,23 @@ public class LunarUtil {
         }
         // 最后一年偏移
         month = leapMonth(getInfo(y));
-        return (int) getLunarDate(y, 1, month, interval);
+        return getLunarDate(y, 1, month, interval);
     }
 
-    private static long getLunarDate(int y, int startMonth, int leapMonth, long interval) {
-        final long old = interval;
+    private static int getLunarDate(int y, int startMonth, int leapMonth, int interval) {
+        final int old = interval;
         long info = getInfo(y);
         int days;
         for (int i = startMonth; i <= LAST_MONTH; i++) {
             days = monthDays(info, i);
             if (days >= interval) {
-                return getPackageTime(y, i, (int) interval, false);
+                return getPackageTime(y, i, interval, false);
             }
             interval -= days;
             if (leapMonth == i) {
                 days = leapDays(info);
                 if (days >= interval) {
-                    return getPackageTime(y, i, (int) interval, true);
+                    return getPackageTime(y, i, interval, true);
                 }
                 interval -= days;
             }
@@ -100,6 +165,7 @@ public class LunarUtil {
 
     /**
      * 求指定日期之间的差值（天）
+     * 目标必须在起始之后
      *
      * @param y1    起始年
      * @param m1    起始月
@@ -207,7 +273,9 @@ public class LunarUtil {
     }
 
     private static long getInfo(int y) {
-        return LUNAR_INFO[y - START_YEAR];
+        int i = y - START_YEAR;
+        Assert.checkIndex(i, LUNAR_INFO.length);
+        return LUNAR_INFO[i];
     }
 
     /**
