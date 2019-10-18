@@ -1,6 +1,7 @@
 package com.yeternal.assistant.util;
 
 import cn.hutool.core.lang.Assert;
+import cn.hutool.core.util.StrUtil;
 
 /**
  * <p>
@@ -34,6 +35,24 @@ public class LunarUtil {
             0x07954, 0x06aa0, 0x0ad50, 0x05b52, 0x04b60, 0x0a6e6, 0x0a4e0, 0x0d260, 0x0ea65, 0x0d530,
             0x05aa0, 0x076a3, 0x096d0, 0x04bd7, 0x04ad0, 0x0a4d0, 0x1d0b6, 0x0d250, 0x0d520, 0x0dd45,
             0x0b5a0, 0x056d0, 0x055b2, 0x049b0, 0x0a577, 0x0a4b0, 0x0aa50, 0x1b255, 0x06d20, 0x0ada0};
+
+    private final static String[] SIMPLE_DIGITS = {"零", "一", "二", "三", "四", "五", "六", "七", "八", "九"};
+    private final static String[] LUNAR_MONTH = {"腊", "正", "二", "三", "四", "五", "六", "七", "八", "九", "十", "冬"};
+    private final static String[] LUNAR_DAY1 = {"初十", "二十", "三十"};
+    private final static String[] LUNAR_DAY2 = {"初", "廿", "卅"};
+
+    public static String lunarToString(int y, int m, int d, boolean leap) {
+        checkDate(y, m, d, leap);
+        int quotient = d / 10;
+        int remainder = d % 10;
+        String day;
+        if (remainder == 0) {
+            day = LUNAR_DAY1[quotient - 1];
+        } else {
+            day = LUNAR_DAY2[quotient] + SIMPLE_DIGITS[remainder];
+        }
+        return StrUtil.format("{}年{}{}月{}", y, leap ? "润" : "", LUNAR_MONTH[m % 12], day);
+    }
 
     /**
      * 求指定日期之间的差值（天）
@@ -88,6 +107,17 @@ public class LunarUtil {
         return getLunarDate(y, m, d, leap, (int) interval);
     }
 
+    /**
+     * 农历日期校验
+     * 1.年份 月份范围校验
+     * 2.日范围校验
+     * 3.闰月真实性校验
+     *
+     * @param y    年
+     * @param m    月
+     * @param d    日
+     * @param leap 闰月
+     */
     private static void checkDate(int y, int m, int d, boolean leap) {
         long info = getInfo(y);
         Assert.checkBetween(m, 1, LAST_MONTH);
@@ -178,10 +208,6 @@ public class LunarUtil {
      * @return 天数
      */
     private static int interval(int y1, int m1, int d1, boolean leap1, int y2, int m2, int d2, boolean leap2) {
-        // 假设已经进行参数校验
-        // 1.年份 月份范围校验
-        // 2.日范围校验
-        // 3.闰月真实性校验
         long info1 = getInfo(y1);
         long info2 = getInfo(y2);
         int border1 = leap1 ? m1 : m1 - 1;
