@@ -41,6 +41,8 @@ public class LunarUtil {
     private final static String[] LUNAR_DAY1 = {"初十", "二十", "三十"};
     private final static String[] LUNAR_DAY2 = {"初", "廿", "卅"};
 
+    private final static long[] LUNAR_YEAR_DAYS = new long[LUNAR_INFO.length];
+
     public static String lunarToString(int y, int m, int d, boolean leap) {
         checkDate(y, m, d, leap);
         int quotient = d / 10;
@@ -51,7 +53,7 @@ public class LunarUtil {
         } else {
             day = LUNAR_DAY2[quotient] + SIMPLE_DIGITS[remainder];
         }
-        return StrUtil.format("{}年{}{}月{}", y, leap ? "润" : "", LUNAR_MONTH[m % 12], day);
+        return StrUtil.format("{}年{}{}月{}", y, leap ? "润" : "", LUNAR_MONTH[m - LAST_MONTH], day);
     }
 
     /**
@@ -235,17 +237,21 @@ public class LunarUtil {
 
     /**
      * 指定年份之间间隔几天
+     * [y1,y2]
      *
-     * @param y1 起始年
-     * @param y2 目标年
+     * @param y1 起始年 (包含)
+     * @param y2 目标年 (包含)
      * @return 天数 y1>y2 返回0
      */
     private static int yearDays(int y1, int y2) {
-        int sum = 0;
-        for (int i = y1; i <= y2; i++) {
-            sum += yearDays(getInfo(i));
+        if (LUNAR_YEAR_DAYS[0] == 0) {
+            int sum = 0;
+            for (int i = 0; i < LUNAR_INFO.length; i++) {
+                sum += yearDays(getInfo(i + START_YEAR));
+                LUNAR_YEAR_DAYS[i] = sum;
+            }
         }
-        return sum;
+        return (int) (LUNAR_YEAR_DAYS[y2 - START_YEAR] - y1 == START_YEAR ? 0 : LUNAR_YEAR_DAYS[y1 - START_YEAR - 1]);
     }
 
     /**
@@ -312,7 +318,7 @@ public class LunarUtil {
      * @param d 日
      * @return 特定格式的年月日 闰月采用+12算法
      */
-    private static int getPackageTime(int y, int m, int d, boolean leap) {
-        return y * 10000 + (leap ? m + 12 : m) * 100 + d;
+    public static int getPackageTime(int y, int m, int d, boolean leap) {
+        return y * 10000 + (leap ? m + LAST_MONTH : m) * 100 + d;
     }
 }
