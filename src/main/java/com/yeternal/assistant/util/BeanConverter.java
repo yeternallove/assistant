@@ -1,8 +1,10 @@
 package com.yeternal.assistant.util;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.yeternal.assistant.model.entity.Birthday;
 import com.yeternal.assistant.model.entity.SysUser;
 import com.yeternal.assistant.model.payload.SysUserRequest;
+import com.yeternal.assistant.model.vo.BirthdayVO;
 import com.yeternal.assistant.model.vo.SysUserVO;
 
 /**
@@ -27,4 +29,9 @@ public class BeanConverter {
         return BeanUtil.toBean(userDTO, SysUser.class);
     }
 
+    //birthday ##################################################
+
+    public static BirthdayVO toBirthdayVO(Birthday birthday) {
+        return BeanUtil.toBean(birthday, BirthdayVO.class);
+    }
 }

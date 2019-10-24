@@ -39,11 +39,7 @@ public class PageResult<T> {
         this.list = list;
     }
 
-    public static <T> PageResult<T> of(int total, List<T> list) {
-        return new PageResult<>(total, list);
-    }
-
-    public static <T> PageResult<T> of(long total, List<T> list) {
-        return new PageResult<>(total, list);
+    public static <T> PageResult<T> of(Number total, List<T> list) {
+        return new PageResult<>(total.longValue(), list);
     }
 }
