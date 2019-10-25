@@ -1,6 +1,9 @@
 package com.yeternal.assistant.model.payload;
 
-import com.yeternal.assistant.model.entity.Birthday;
+import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.util.Date;
 
 /**
  * <p>
@@ -10,5 +13,27 @@ import com.yeternal.assistant.model.entity.Birthday;
  * @author eternallove
  * @date Created in 2019/10/24 18:02
  */
-public class BirthdayRequest extends Birthday {
+@Data
+public class BirthdayRequest {
+
+    /**
+     * 用户名
+     */
+    private String name;
+
+    /**
+     * 生日
+     */
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private Date birthday;
+
+    /**
+     * 是否农历
+     */
+    private Boolean lunar = false;
+
+    /**
+     * 提前提醒时间
+     */
+    private Long remindConfig;
 }

@@ -11,8 +11,8 @@ CREATE TABLE `birthday`
     `name`          varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '名称',
     `birthday`      int(11)                                                      NULL DEFAULT NULL COMMENT '生日，格式为yyyyMMdd转int,农历为负数',
     `remind_config` bigint(13)                                                   NULL DEFAULT NULL COMMENT '提前提醒配置 毫秒数',
-    `next_birthday` int(11)                                                      NULL DEFAULT NULL COMMENT '下一次生日对应时间',
-    `remind_time`   datetime(0)                                                  NULL DEFAULT NULL COMMENT '下一次提醒时间',
+    `next_birthday` date                                                         NULL DEFAULT NULL COMMENT '下一次生日对应时间',
+    `remind_time`   datetime                                                     NULL DEFAULT NULL COMMENT '下一次提醒时间',
     `user_id`       int(11)                                                      NULL DEFAULT NULL COMMENT '所属用户id',
     PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB
@@ -34,9 +34,9 @@ CREATE TABLE `user`
     `email`           varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '邮箱',
     `phone_number`    varchar(15) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '手机号码',
     `status`          int(2)                                                 NOT NULL DEFAULT 1 COMMENT '状态，-1：逻辑删除，0：禁用，1：启用',
-    `last_login_time` datetime(0)                                            NULL     DEFAULT NULL COMMENT '最后一次登录时间',
-    `create_time`     datetime(0)                                            NOT NULL DEFAULT CURRENT_TIMESTAMP(0) COMMENT '创建时间',
-    `update_time`     datetime(0)                                            NOT NULL DEFAULT CURRENT_TIMESTAMP(0) COMMENT '最近修改时间',
+    `last_login_time` datetime                                               NULL     DEFAULT NULL COMMENT '最后一次登录时间',
+    `create_time`     datetime                                               NOT NULL DEFAULT CURRENT_TIMESTAMP(0) COMMENT '创建时间',
+    `update_time`     datetime                                               NOT NULL DEFAULT CURRENT_TIMESTAMP(0) COMMENT '最近修改时间',
     PRIMARY KEY (`id`) USING BTREE,
     UNIQUE INDEX `name` (`name`) USING BTREE,
     UNIQUE INDEX `email` (`email`) USING BTREE,

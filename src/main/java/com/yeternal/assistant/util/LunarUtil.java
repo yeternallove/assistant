@@ -18,6 +18,10 @@ public class LunarUtil {
     private final static int FLAG_MOUTH = 0x8000;
     private final static int FLAG_LEAP_MOUTH = 0x8;
     private final static int LAST_MONTH = 12;
+    /**
+     * 一个月最多有几天
+     */
+    private final static int MAX_DAYS = 30;
 
     private final static long[] LUNAR_INFO = new long[]{
             0x04bd8, 0x04ae0, 0x0a570, 0x054d5, 0x0d260, 0x0d950, 0x16554, 0x056a0, 0x09ad0, 0x055d2,
@@ -107,6 +111,33 @@ public class LunarUtil {
     public static int getLunarDate(int y, int m, int d, boolean leap, long interval) {
         Assert.checkBetween(interval, 1, Integer.MAX_VALUE);
         return getLunarDate(y, m, d, leap, (int) interval);
+    }
+
+    /**
+     * 获取置闰后的生日
+     *
+     * @return 生日
+     */
+    public static int getIntercalation(int y, int m, int d, boolean leap) {
+        long info = getInfo(y);
+        int days;
+        if (leap) {
+            int month = leapMonth(info);
+            if (m != month) {
+                leap = false;
+            }
+        }
+        if (d == MAX_DAYS) {
+            if (leap) {
+                days = leapDays(info);
+            } else {
+                days = monthDays(info, m);
+            }
+            if (d > days) {
+                d = days;
+            }
+        }
+        return getPackageTime(y, m, d, leap);
     }
 
     /**

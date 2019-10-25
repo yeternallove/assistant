@@ -22,8 +22,9 @@ public interface IBirthdayService {
      * 新增
      *
      * @param birthday 生日信息
+     * @param userId   用户id
      */
-    void save(BirthdayRequest birthday);
+    void save(BirthdayRequest birthday, int userId);
 
     /**
      * 删除
@@ -35,9 +36,10 @@ public interface IBirthdayService {
     /**
      * 更新
      *
+     * @param id       主键
      * @param birthday {@link Birthday}
      */
-    void update(BirthdayRequest birthday);
+    void update(Integer id, BirthdayRequest birthday);
 
     /**
      * 查询

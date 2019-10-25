@@ -47,9 +47,9 @@ public class Birthday implements Serializable {
     private Long remindConfig;
 
     /**
-     * 下一次生日对应时间 20190101
+     * 下一次生日对应时间
      */
-    private Integer nextBirthday;
+    private Date nextBirthday;
 
     /**
      * 下一次提醒时间
