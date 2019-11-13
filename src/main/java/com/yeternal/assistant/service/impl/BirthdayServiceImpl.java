@@ -1,11 +1,15 @@
 package com.yeternal.assistant.service.impl;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.yeternal.assistant.common.api.AssistantResultCode;
+import com.yeternal.assistant.common.api.CommonResultCode;
 import com.yeternal.assistant.common.api.PageResult;
+import com.yeternal.assistant.exception.ServiceException;
 import com.yeternal.assistant.mapper.BirthdayMapper;
-import com.yeternal.assistant.model.dto.DateDay;
 import com.yeternal.assistant.model.entity.Birthday;
 import com.yeternal.assistant.model.payload.BirthdayRequest;
 import com.yeternal.assistant.model.query.BirthdayQuery;
@@ -34,24 +38,45 @@ public class BirthdayServiceImpl extends ServiceImpl<BirthdayMapper, Birthday> i
 
     @Override
     public void save(BirthdayRequest birthday, int userId) {
+        QueryWrapper<Birthday> wrapper = new QueryWrapper<>();
+        wrapper.lambda()
+                .eq(Birthday::getUserId, userId)
+                .eq(Birthday::getName, birthday.getName());
+        if (count(wrapper) > 0) {
+            throw new ServiceException(AssistantResultCode.SAME_NAME);
+        }
         save(buildBirthday(birthday, null, userId));
-
     }
 
     @Override
-    public void delete(List<Long> ids) {
+    public void delete(List<Long> ids, int userId) {
+        QueryWrapper<Birthday> wrapper = new QueryWrapper<>();
+        wrapper.lambda()
+                .eq(Birthday::getUserId, userId)
+                .in(Birthday::getId, ids);
+        int count = count(wrapper);
+        if (count != ids.size()) {
+            throw new ServiceException(CommonResultCode.REQ_REJECT);
+        }
         removeByIds(ids);
     }
 
     @Override
-    public void update(Integer id, BirthdayRequest birthday) {
+    public void update(Integer id, BirthdayRequest birthday, int userId) {
+        Birthday one = getById(id);
+        if (userId != one.getUserId()) {
+            throw new ServiceException(CommonResultCode.REQ_REJECT);
+        }
         updateById(buildBirthday(birthday, id, null));
     }
 
     @Override
-    public PageResult<BirthdayVO> listBirthday(BirthdayQuery query) {
+    public PageResult<BirthdayVO> listBirthday(BirthdayQuery query, int userId) {
         QueryWrapper<Birthday> wrapper = new QueryWrapper<>();
-        IPage<Birthday> page = page(query.page(), wrapper.lambda().like(Birthday::getName, query.getName()));
+        wrapper.lambda()
+                .eq(Birthday::getUserId, userId)
+                .like(StrUtil.isNotBlank(query.getName()), Birthday::getName, query.getName());
+        IPage<Birthday> page = page(query.page(), wrapper);
         List<BirthdayVO> list = page.getRecords().stream().map(BeanConverter::toBirthdayVO).collect(Collectors.toList());
         return PageResult.of(page.getTotal(), list);
     }
@@ -60,17 +85,10 @@ public class BirthdayServiceImpl extends ServiceImpl<BirthdayMapper, Birthday> i
         Birthday birthday = new Birthday();
         birthday.setName(birthdayRequest.getName());
         birthday.setRemindConfig(birthdayRequest.getRemindConfig());
-        int date;
-        if (birthdayRequest.getLunar()) {
-            DateDay dateDay = TimeUtil.transToLunar(birthdayRequest.getBirthday());
-            date = TimeUtil.getPackageTime(dateDay);
-        } else {
-            date = TimeUtil.getPackageTime(birthdayRequest.getBirthday());
-        }
-        birthday.setBirthday(date);
-        // TODO
-        //  birthday.setNextBirthday();
-        //  birthday.setRemindTime();
+        int date = TimeUtil.getPackageTime(birthdayRequest.getBirthday());
+        birthday.setBirthday(birthdayRequest.getLunar() ? -date : date);
+        birthday.setNextBirthday(TimeUtil.getNextBirthday(date, DateUtil.thisYear(), birthdayRequest.getLunar()));
+        birthday.setRemindTime(DateUtil.offsetMillisecond(birthday.getNextBirthday(), birthday.getRemindConfig()));
 
         // 新增插入
         birthday.setUserId(userId);

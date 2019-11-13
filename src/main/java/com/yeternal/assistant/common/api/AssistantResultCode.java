@@ -18,7 +18,12 @@ public enum AssistantResultCode implements IResultCode {
     /**
      * 主键不能为空
      */
-    PRIMARY_KEY_NOT_EMPTY(1000, "主键不能为空");
+    PRIMARY_KEY_NOT_EMPTY(1000, "主键不能为空"),
+    /**
+     * 存在同名
+     */
+    SAME_NAME(2000, "存在同名"),
+    ;
 
     /**
      * code编码

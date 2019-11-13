@@ -6,7 +6,7 @@ import lombok.EqualsAndHashCode;
 
 /**
  * <p>
- * 基础异常
+ * 业务异常
  * </p>
  *
  * @author eternallove

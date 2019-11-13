@@ -51,15 +51,14 @@ public class Func {
      * 参数为NULL 则返回null
      * 校验分页参数，为NULL，设置分页参数默认值
      *
-     * @param query 查询参数
      * @param <T>   查询参数泛型 {@link PageQuery}
-     * @return T
+     * @param query 查询参数
      */
-    public <T extends PageQuery> T checkPageQuery(T query) {
+    public <T extends PageQuery> void checkPageQuery(T query) {
         if (ObjectUtil.isNull(query)) {
-            return null;
+            return;
         }
-        return checkPageQuery(query, null);
+        checkPageQuery(query, null);
     }
 
     /**

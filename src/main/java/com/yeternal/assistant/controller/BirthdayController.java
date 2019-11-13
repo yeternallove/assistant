@@ -23,6 +23,7 @@ import java.util.List;
  * @date Created in 2019/10/23 16:58
  */
 @RestController
+@RequestMapping("/birthday")
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class BirthdayController {
 
@@ -39,7 +40,7 @@ public class BirthdayController {
     @GetMapping
     public R getProjectList(BirthdayQuery query) {
         Func.checkPageQuery(query);
-        return R.success(birthdayService.listBirthday(query));
+        return R.success(birthdayService.listBirthday(query, USER_ID));
     }
 
     /**
@@ -57,7 +58,7 @@ public class BirthdayController {
     @DeleteMapping
     public R delete(@RequestParam List<Long> ids) {
         if (CollUtil.isNotEmpty(ids)) {
-            birthdayService.delete(ids);
+            birthdayService.delete(ids, USER_ID);
         }
         return R.success();
     }
@@ -70,7 +71,7 @@ public class BirthdayController {
         if (null == id) {
             throw new ServiceException(AssistantResultCode.PRIMARY_KEY_NOT_EMPTY);
         }
-        birthdayService.update(id,birthday);
+        birthdayService.update(id, birthday, USER_ID);
         return R.success();
     }
 }

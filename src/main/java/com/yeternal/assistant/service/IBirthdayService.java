@@ -29,24 +29,27 @@ public interface IBirthdayService {
     /**
      * 删除
      *
-     * @param ids 主键数组
+     * @param ids    主键数组
+     * @param userId 用户id
      */
-    void delete(List<Long> ids);
+    void delete(List<Long> ids, int userId);
 
     /**
      * 更新
      *
      * @param id       主键
      * @param birthday {@link Birthday}
+     * @param userId   用户id
      */
-    void update(Integer id, BirthdayRequest birthday);
+    void update(Integer id, BirthdayRequest birthday, int userId);
 
     /**
      * 查询
      *
-     * @param query 查询条件
+     * @param query  查询条件
+     * @param userId 用户id
      * @return 查询列表
      */
-    PageResult<BirthdayVO> listBirthday(BirthdayQuery query);
+    PageResult<BirthdayVO> listBirthday(BirthdayQuery query, int userId);
 
 }

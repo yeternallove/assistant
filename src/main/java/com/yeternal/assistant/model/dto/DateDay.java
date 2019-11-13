@@ -24,5 +24,5 @@ public class DateDay {
     /**
      * 仅农历使用 闰月
      */
-    private boolean leap;
+    private boolean leap = false;
 }

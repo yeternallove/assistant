@@ -7,7 +7,6 @@ import cn.hutool.core.date.format.FastDateFormat;
 import cn.hutool.core.lang.Assert;
 import com.yeternal.assistant.model.dto.DateDay;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
@@ -23,8 +22,13 @@ import java.util.Date;
 public class TimeUtil {
     private final static int LAST_MONTH = 12;
     private final static int[] LEAP_DAY = {2, 29};
-
+    /**
+     * 设定 农历 基础时间点
+     */
     private final static DateDay BASE_LUNAR_DATE = new DateDay(1901, 1, 1, false);
+    /**
+     * 设定 阳历 基础时间点
+     */
     private final static Date BASE_DATE = new DateTime("1901-02-19", "yyyy-MM-dd");
     private final static FastDateFormat DATE_FORMAT = FastDateFormat.getInstance("yyyyMMdd");
 
@@ -48,6 +52,14 @@ public class TimeUtil {
         return getUnpackTime(LunarUtil.getLunarDate(BASE_LUNAR_DATE.getYear(), BASE_LUNAR_DATE.getMonth(), BASE_LUNAR_DATE.getDay(), BASE_LUNAR_DATE.isLeap(), (int) between));
     }
 
+    /**
+     * 获取在指定年的生日日期 若该年无生日则返回空
+     *
+     * @param birthday 生日
+     * @param year     指定年
+     * @param lunar    是否农历
+     * @return 阳历时间
+     */
     public static Date getBirthdayInYear(int birthday, int year, boolean lunar) {
         DateDay dateDay = getUnpackTime(birthday);
         if (lunar) {
@@ -58,6 +70,14 @@ public class TimeUtil {
             return null;
         }
         return Date.from(LocalDateTime.of(year, dateDay.getMonth(), dateDay.getDay(), 0, 0).atZone(ZoneId.systemDefault()).toInstant());
+    }
+
+    public static Date getNextBirthday(int birthday, int startYear, boolean lunar) {
+        Date date = null;
+        while (date == null) {
+            date = getBirthdayInYear(birthday, startYear++, lunar);
+        }
+        return date;
     }
 
     private static DateDay getUnpackTime(int date) {

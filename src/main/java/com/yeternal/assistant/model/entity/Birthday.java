@@ -44,7 +44,7 @@ public class Birthday implements Serializable {
     /**
      * 提醒配置 提前提醒毫秒数
      */
-    private Long remindConfig;
+    private Integer remindConfig;
 
     /**
      * 下一次生日对应时间
