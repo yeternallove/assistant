@@ -10,7 +10,7 @@ CREATE TABLE `birthday`
     `id`            int(11)                                                      NOT NULL AUTO_INCREMENT COMMENT 'id',
     `name`          varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '名称',
     `birthday`      int(11)                                                      NULL DEFAULT NULL COMMENT '生日，格式为yyyyMMdd转int,农历为负数',
-    `remind_config` int(11)                                                   NULL DEFAULT NULL COMMENT '提前提醒配置 秒数',
+    `remind_config` int(11)                                                   NULL DEFAULT NULL COMMENT '提前提醒配置 天',
     `next_birthday` date                                                         NULL DEFAULT NULL COMMENT '下一次生日对应时间',
     `remind_time`   datetime                                                     NULL DEFAULT NULL COMMENT '下一次提醒时间',
     `user_id`       int(11)                                                      NULL DEFAULT NULL COMMENT '所属用户id',

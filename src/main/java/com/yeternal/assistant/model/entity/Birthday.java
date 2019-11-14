@@ -42,7 +42,7 @@ public class Birthday implements Serializable {
     private Integer birthday;
 
     /**
-     * 提醒配置 提前提醒毫秒数
+     * 提醒配置 天
      */
     private Integer remindConfig;
 

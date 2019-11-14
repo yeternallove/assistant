@@ -45,7 +45,7 @@ public class LunarUtil {
     private final static String[] LUNAR_DAY1 = {"初十", "二十", "三十"};
     private final static String[] LUNAR_DAY2 = {"初", "廿", "卅"};
 
-    private final static long[] LUNAR_YEAR_DAYS = new long[LUNAR_INFO.length];
+    private final static int[] LUNAR_YEAR_DAYS = new int[LUNAR_INFO.length];
 
     public static String lunarToString(int y, int m, int d, boolean leap) {
         checkDate(y, m, d, leap);
@@ -268,13 +268,16 @@ public class LunarUtil {
 
     /**
      * 指定年份之间间隔几天
-     * [y1,y2]
+     * y1 =< y2 返回[y1,y2]
+     * y1-1 == y2 返回0
+     * y1-1 > y2 返回 - [y2+1,y1-1]
      *
      * @param y1 起始年 (包含)
      * @param y2 目标年 (包含)
-     * @return 天数 y1>y2 返回0
+     * @return 天数
      */
     private static int yearDays(int y1, int y2) {
+        // 检测
         if (LUNAR_YEAR_DAYS[0] == 0) {
             int sum = 0;
             for (int i = 0; i < LUNAR_INFO.length; i++) {
@@ -282,7 +285,7 @@ public class LunarUtil {
                 LUNAR_YEAR_DAYS[i] = sum;
             }
         }
-        return (int) (LUNAR_YEAR_DAYS[y2 - START_YEAR] - y1 == START_YEAR ? 0 : LUNAR_YEAR_DAYS[y1 - START_YEAR - 1]);
+        return LUNAR_YEAR_DAYS[y2 - START_YEAR] - (y1 == START_YEAR ? 0 : LUNAR_YEAR_DAYS[y1 - START_YEAR - 1]);
     }
 
     /**

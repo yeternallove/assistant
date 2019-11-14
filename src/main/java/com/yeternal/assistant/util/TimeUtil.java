@@ -72,9 +72,21 @@ public class TimeUtil {
         return Date.from(LocalDateTime.of(year, dateDay.getMonth(), dateDay.getDay(), 0, 0).atZone(ZoneId.systemDefault()).toInstant());
     }
 
-    public static Date getNextBirthday(int birthday, int startYear, boolean lunar) {
+    /**
+     * 获取某个时间之后的生日日期
+     *
+     * @param birthday 生日
+     * @param now      当前时间
+     * @param lunar    是否农历
+     * @return 生日日期
+     */
+    public static Date getNextBirthday(int birthday, Date now, boolean lunar) {
+        if (null == now) {
+            now = DateUtil.date();
+        }
         Date date = null;
-        while (date == null) {
+        int startYear = DateUtil.year(now);
+        while (date == null || now.after(date)) {
             date = getBirthdayInYear(birthday, startYear++, lunar);
         }
         return date;

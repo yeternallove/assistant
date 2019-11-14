@@ -1,5 +1,6 @@
 package com.yeternal.assistant.service.impl;
 
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -82,13 +83,22 @@ public class BirthdayServiceImpl extends ServiceImpl<BirthdayMapper, Birthday> i
     }
 
     private Birthday buildBirthday(BirthdayRequest birthdayRequest, Integer id, Integer userId) {
+        DateTime now = DateUtil.date();
+
         Birthday birthday = new Birthday();
         birthday.setName(birthdayRequest.getName());
         birthday.setRemindConfig(birthdayRequest.getRemindConfig());
+
         int date = TimeUtil.getPackageTime(birthdayRequest.getBirthday());
         birthday.setBirthday(birthdayRequest.getLunar() ? -date : date);
-        birthday.setNextBirthday(TimeUtil.getNextBirthday(date, DateUtil.thisYear(), birthdayRequest.getLunar()));
-        birthday.setRemindTime(DateUtil.offsetMillisecond(birthday.getNextBirthday(), birthday.getRemindConfig()));
+
+        birthday.setNextBirthday(TimeUtil.getNextBirthday(date, now, birthdayRequest.getLunar()));
+        DateTime remindTime = DateUtil.offsetDay(birthday.getNextBirthday(), -birthday.getRemindConfig());
+        if (remindTime.isBeforeOrEquals(now)) {
+            birthday.setRemindTime(birthday.getNextBirthday());
+        } else {
+            birthday.setRemindTime(remindTime);
+        }
 
         // 新增插入
         birthday.setUserId(userId);
